@@ -10,11 +10,9 @@ vignette: >
 
 # Introduction
 
-The `simplelm` package provides a simplified implementation of ordinary least squares (OLS) linear regression in R.
+This vignette shows how to use the `simplelm` package and compares its results with R's built-in `lm()` function.
 
-Unlike the built-in `lm()` function, `simplelm` estimates regression coefficients by explicitly constructing and solving the normal equations.
-
-The package supports simple and multiple linear regression, prediction, and basic model summary statistics.
+The package calculates regression coefficients using the normal equations. It also includes functions for prediction and model summary statistics. The goal is to implement a basic version of linear regression rather than reproduce all the features of `lm()`.
 
 # Fitting a Linear Regression Model
 
@@ -42,7 +40,7 @@ model <- simple_lm(X, y)
 model$coefficients
 ```
 
-The estimated coefficients should be close to the true values of 2, 3, and -1.5.
+The data were generated with an intercept of 2 and coefficients of 3 and -1.5. The estimated values are close to these numbers, although they are not exactly the same because random noise was added.
 
 # Model Summary
 
@@ -52,7 +50,7 @@ We can obtain model summary statistics using `summary()`.
 summary(model)
 ```
 
-The summary includes the residual standard error, R-squared, and adjusted R-squared.
+The summary gives the residual standard error, R-squared, and adjusted R-squared. Since the simulated data have relatively little noise, the model should have a high R-squared value.
 
 # Prediction
 
@@ -150,14 +148,8 @@ do.call(rbind, benchmark_results)
 
 ## Performance Interpretation
 
-The benchmark results show that `simple_lm()` was faster than the built-in `lm()` function across all three tested sample sizes.
+In this test, `simple_lm()` was faster and used less memory than `lm()` for all three sample sizes.
 
-For 100 observations, `simple_lm()` was approximately 5.04 times faster than `lm()`. For 1,000 and 10,000 observations, the speedup decreased to approximately 3.09 and 1.92 times, respectively.
+One possible reason is that `simple_lm()` is simpler and does not include many of the features provided by `lm()`.
 
-The `simple_lm()` implementation also allocated less memory across all tested sample sizes.
-
-These results may be explained by the simpler implementation of `simple_lm()`, which avoids some of the additional functionality and overhead of `lm()`.
-
-However, `simple_lm()` uses the normal equations, which can be less numerically stable than the QR-based approach used by `lm()`, particularly for ill-conditioned design matrices.
-
-Therefore, the observed performance advantage should not be interpreted as evidence that `simple_lm()` is universally superior to `lm()`.
+However, the normal equations can be less numerically stable than the QR decomposition used by `lm()`. The performance results may also change with different datasets or computers.

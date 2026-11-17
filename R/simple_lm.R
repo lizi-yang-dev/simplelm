@@ -6,6 +6,11 @@
 #' @param X A numeric matrix, data frame, or vector of predictors.
 #' @param y A numeric vector of response values.
 #'
+#' @details
+#' Missing and infinite values are not allowed.
+#' The function requires more observations than parameters
+#' and does not support rank-deficient design matrices.
+#'
 #' @return An object of class `simple_lm` containing:
 #' \describe{
 #'   \item{coefficients}{Estimated regression coefficients.}

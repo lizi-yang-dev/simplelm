@@ -24,6 +24,11 @@ An object of class \code{simple_lm} containing:
 Fits a linear regression model using the normal equations.
 The model includes an intercept by default.
 }
+\details{
+Missing and infinite values are not allowed.
+The function requires more observations than parameters
+and does not support rank-deficient design matrices.
+}
 \examples{
 x <- 1:10
 y <- 2 + 3 * x

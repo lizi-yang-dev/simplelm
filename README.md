@@ -1,9 +1,9 @@
 
 # simplelm
 
-`simplelm` is an R package that implements ordinary least squares (OLS) linear regression using the normal equations.
+simplelm is an R package for fitting linear regression models using ordinary least squares (OLS).
 
-The package provides functions for fitting linear regression models, making predictions, and calculating model summary statistics.
+I wrote this package to practice implementing linear regression with matrix operations instead of calling lm() directly. It supports model fitting, prediction, and basic summary statistics.
 
 ## Installation
 
