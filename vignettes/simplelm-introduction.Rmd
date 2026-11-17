@@ -1,0 +1,163 @@
+---
+title: "simplelm-introduction"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{simplelm-introduction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+# Introduction
+
+The `simplelm` package provides a simplified implementation of ordinary least squares (OLS) linear regression in R.
+
+Unlike the built-in `lm()` function, `simplelm` estimates regression coefficients by explicitly constructing and solving the normal equations.
+
+The package supports simple and multiple linear regression, prediction, and basic model summary statistics.
+
+# Fitting a Linear Regression Model
+
+We first generate a simulated dataset with two predictors.
+
+```{r setup}
+library(simplelm)
+
+set.seed(123)
+
+n <- 100
+x1 <- rnorm(n)
+x2 <- rnorm(n)
+
+y <- 2 + 3 * x1 - 1.5 * x2 + rnorm(n, sd = 0.5)
+
+X <- data.frame(x1, x2)
+```
+
+We fit a linear regression model using `simple_lm()`.
+
+```{r fit-model}
+model <- simple_lm(X, y)
+
+model$coefficients
+```
+
+The estimated coefficients should be close to the true values of 2, 3, and -1.5.
+
+# Model Summary
+
+We can obtain model summary statistics using `summary()`.
+
+```{r model-summary}
+summary(model)
+```
+
+The summary includes the residual standard error, R-squared, and adjusted R-squared.
+
+# Prediction
+
+We can use the fitted model to predict responses for new observations.
+
+```{r prediction}
+newdata <- data.frame(
+  x1 = c(0, 1, 2),
+  x2 = c(1, 0, -1)
+)
+
+predict(model, newdata)
+```
+
+
+# Correctness Comparison
+
+To verify the correctness of our implementation, we compare the results from `simple_lm()` with R's built-in `lm()` function.
+
+```{r correctness}
+original_model <- lm(y ~ x1 + x2)
+
+# Compare regression coefficients
+all.equal(
+  as.numeric(model$coefficients),
+  as.numeric(coef(original_model))
+)
+
+# Compare fitted values
+all.equal(
+  as.numeric(model$fitted.values),
+  as.numeric(fitted(original_model))
+)
+
+# Compare residuals
+all.equal(
+  as.numeric(model$residuals),
+  as.numeric(residuals(original_model))
+)
+
+# Compare R-squared
+all.equal(
+  summary(model)$r.squared,
+  summary(original_model)$r.squared
+)
+
+# Compare predictions
+all.equal(
+  as.numeric(predict(model, newdata)),
+  as.numeric(predict(original_model, newdata))
+)
+```
+
+The comparisons above verify that `simple_lm()` produces results numerically equivalent to `lm()` for the simulated dataset, within floating-point tolerance.
+
+
+# Performance Comparison
+
+We compare the computational efficiency of `simple_lm()` and the built-in `lm()` using the `bench` package.
+
+We generate simulated datasets of different sizes to evaluate performance.
+
+```{r benchmark, message=FALSE}
+library(bench)
+
+set.seed(456)
+
+sample_sizes <- c(100, 1000, 10000)
+
+benchmark_results <- lapply(sample_sizes, function(n) {
+
+  x1 <- rnorm(n)
+  x2 <- rnorm(n)
+  y <- 2 + 3 * x1 - 1.5 * x2 + rnorm(n)
+
+  X <- data.frame(x1, x2)
+
+  result <- bench::mark(
+    simplelm = simple_lm(X, y),
+    base_lm = lm(y ~ x1 + x2),
+    iterations = 50,
+    check = FALSE
+  )
+
+  data.frame(
+    sample_size = n,
+    method = as.character(result$expression),
+    median_time = as.character(result$median),
+    memory = as.character(result$mem_alloc)
+  )
+})
+
+do.call(rbind, benchmark_results)
+```
+
+## Performance Interpretation
+
+The benchmark results show that `simple_lm()` was faster than the built-in `lm()` function across all three tested sample sizes.
+
+For 100 observations, `simple_lm()` was approximately 5.04 times faster than `lm()`. For 1,000 and 10,000 observations, the speedup decreased to approximately 3.09 and 1.92 times, respectively.
+
+The `simple_lm()` implementation also allocated less memory across all tested sample sizes.
+
+These results may be explained by the simpler implementation of `simple_lm()`, which avoids some of the additional functionality and overhead of `lm()`.
+
+However, `simple_lm()` uses the normal equations, which can be less numerically stable than the QR-based approach used by `lm()`, particularly for ill-conditioned design matrices.
+
+Therefore, the observed performance advantage should not be interpreted as evidence that `simple_lm()` is universally superior to `lm()`.
